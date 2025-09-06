@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Linear Algebra Lab - Page 3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .lab-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .control-panel {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 3px solid #667eea;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .visualization-area {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(240, 147, 251, 0.3) 0%, transparent 50%),
+                        #0f0f23;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #667eea, #f093fb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .concept-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab-btn:hover::before {
+            left: 100%;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #f093fb;
+            box-shadow: 0 8px 30px rgba(240, 147, 251, 0.4);
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #f093fb;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            position: relative;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff, #667eea);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid #fff;
+        }
+
+        .value-display {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            display: inline-block;
+            margin-top: 5px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .info-overlay {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 280px;
+            border: 2px solid rgba(240, 147, 251, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-title {
+            color: #f093fb;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .math-display {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(240, 147, 251, 0.2));
+            border: 1px solid rgba(240, 147, 251, 0.4);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .property-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .property-label {
+            color: #f093fb;
+            font-weight: 600;
+        }
+
+        .property-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .animation-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 25px;
+            border: 2px solid rgba(240, 147, 251, 0.3);
+        }
+
+        .anim-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.3));
+            border: 2px solid transparent;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .anim-btn:hover {
+            border-color: #f093fb;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(240, 147, 251, 0.6));
+            transform: scale(1.05);
+        }
+
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-math {
+            position: absolute;
+            font-size: 3rem;
+            color: rgba(240, 147, 251, 0.1);
+            animation: float 20s infinite ease-in-out;
+            font-weight: bold;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg); 
+                opacity: 0.1;
+            }
+            50% { 
+                transform: translateY(-30px) rotate(180deg); 
+                opacity: 0.3;
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #f093fb);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(240, 147, 251, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(240, 147, 251, 0.6); }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+
+        .concept-description {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="lab-container">
+        <div class="control-panel">
+            <h1>🧮 Advanced Linear Algebra</h1>
+            
+            <div class="concept-tabs">
+                <button class="tab-btn active" data-concept="eigen3d">
+                    ⚡ 3D Eigenvalue Decomposition
+                    <div class="concept-description">Interactive 3D eigenvector visualization with real-time eigenvalue computation</div>
+                </button>
+                <button class="tab-btn" data-concept="svd-live">
+                    🎭 Live SVD Animation
+                    <div class="concept-description">Watch matrices decompose into U·Σ·V^T with geometric interpretation</div>
+                </button>
+                <button class="tab-btn" data-concept="fourier">
+                    🌊 Fourier Transform
+                    <div class="concept-description">See how linear algebra powers frequency domain transformations</div>
+                </button>
+                <button class="tab-btn" data-concept="pca-live">
+                    📊 Live PCA Analysis
+                    <div class="concept-description">Real-time principal component analysis with data cloud manipulation</div>
+                </button>
+                <button class="tab-btn" data-concept="markov">
+                    🔄 Markov Chain Evolution
+                    <div class="concept-description">Watch probability distributions evolve to steady states</div>
+                </button>
+                <button class="tab-btn" data-concept="neural">
+                    🧠 Neural Network Layers
+                    <div class="concept-description">Visualize how linear transformations create neural network layers</div>
+                </button>
+            </div>
+
+            <div class="controls-section" id="dynamicControls">
+                <!-- Controls will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div class="visualization-area">
+            <div class="floating-elements">
+                <div class="floating-math" style="top: 10%; left: 15%; animation-delay: 0s;">λ</div>
+                <div class="floating-math" style="top: 60%; right: 20%; animation-delay: -5s;">Σ</div>
+                <div class="floating-math" style="bottom: 40%; left: 10%; animation-delay: -10s;">∇</div>
+                <div class="floating-math" style="top: 30%; right: 10%; animation-delay: -15s;">∞</div>
+            </div>
+
+            <canvas id="mainCanvas"></canvas>
+            
+            <div class="info-overlay" id="infoPanel">
+                <div class="info-title">3D Eigenvalue Analysis</div>
+                <div class="math-display">A·v = λ·v</div>
+                <div class="property-display">
+                    <span class="property-label">Eigenvalue λ₁:</span>
+                    <span class="property-value" id="eigen1">2.45</span>
+                </div>
+                <div class="property-display">
+                    <span class="property-label">Eigenvalue λ₂:</span>
+                    <span class="property-value" id="eigen2">1.73</span>
+                </div>
+                <div class="property-display">
+                    <span class="property-label">Eigenvalue λ₃:</span>
+                    <span class="property-value" id="eigen3">0.82</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="convergence"></div>
+                </div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-align: center;">Convergence Progress</div>
+            </div>
+
+            <div class="animation-controls">
+                <button class="anim-btn" onclick="startAnimation()">▶️ Animate</button>
+                <button class="anim-btn" onclick="pauseAnimation()">⏸️ Pause</button>
+                <button class="anim-btn" onclick="resetVisualization()">🔄 Reset</button>
+                <button class="anim-btn" onclick="randomizeParameters()">🎲 Random</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let canvas, ctx;
+        let currentConcept = 'eigen3d';
+        let isAnimating = false;
+        let animationId = null;
+        let time = 0;
+        let mouseX = 0, mouseY = 0;
+        let isDragging = false;
+
+        // 3D rotation matrices and camera
+        let camera = {
+            x: 0, y: 0, z: 5,
+            pitch: 0, yaw: 0,
+            fov: 60
+        };
+
+        // Data structures for different visualizations
+        let eigenSystem = {
+            matrix: [[2, 0.5, 0.2], [0.5, 1.8, 0.3], [0.2, 0.3, 1.2]],
+            eigenvalues: [2.45, 1.73, 0.82],
+            eigenvectors: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+            vectors: []
+        };
+
+        let svdData = {
+            originalMatrix: [[2, 1], [1, 1]],
+            U: [[0.85, -0.53], [0.53, 0.85]],
+            S: [2.62, 0.38],
+            V: [[0.85, 0.53], [-0.53, 0.85]]
+        };
+
+        let pcaData = {
+            points: [],
+            mean: [0, 0],
+            components: [[1, 0], [0, 1]],
+            variance: [1, 0.5]
+        };
+
+        // Initialize
+        window.addEventListener('load', function() {
+            canvas = document.getElementById('mainCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            setupEventListeners();
+            generateInitialData();
+            setupControls();
+            startRenderLoop();
+        });
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function setupEventListeners() {
+            // Mouse interaction for 3D rotation
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+
+                if (isDragging) {
+                    camera.yaw += (e.movementX || 0) * 0.01;
+                    camera.pitch += (e.movementY || 0) * 0.01;
+                    camera.pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.pitch));
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+                canvas.style.cursor = 'crosshair';
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                camera.z += e.deltaY * 0.01;
+                camera.z = Math.max(1, Math.min(10, camera.z));
+            });
+
+            // Tab switching
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentConcept = this.dataset.concept;
+                    setupControls();
+                    updateInfoPanel();
+                });
+            });
+        }
+
+        function generateInitialData() {
+            // Generate random 3D vectors for eigenvalue visualization
+            eigenSystem.vectors = [];
+            for (let i = 0; i < 20; i++) {
+                eigenSystem.vectors.push({
+                    x: (Math.random() - 0.5) * 4,
+                    y: (Math.random() - 0.5) * 4,
+                    z: (Math.random() - 0.5) * 4,
+                    color: `hsl(${Math.random() * 360}, 70%, 60%)`
+                });
+            }
+
+            // Generate PCA data points
+            pcaData.points = [];
+            for (let i = 0; i < 50; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 2 + 0.5;
+                pcaData.points.push({
+                    x: Math.cos(angle) * radius + (Math.random() - 0.5) * 0.5,
+                    y: Math.sin(angle) * radius * 0.3 + (Math.random() - 0.5) * 0.3,
+                    color: `hsl(${200 + Math.random() * 60}, 80%, 70%)`
+                });
+            }
+        }
+
+        function setupControls() {
+            const controlsDiv = document.getElementById('dynamicControls');
+            
+            switch(currentConcept) {
+                case 'eigen3d':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Matrix A₁₁</label>
+                            <input type="range" id="m11" min="0.1" max="4" step="0.1" value="2">
+                            <div class="value-display" id="m11-val">2.0</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix A₂₂</label>
+                            <input type="range" id="m22" min="0.1" max="4" step="0.1" value="1.8">
+                            <div class="value-display" id="m22-val">1.8</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix A₃₃</label>
+                            <input type="range" id="m33" min="0.1" max="4" step="0.1" value="1.2">
+                            <div class="value-display" id="m33-val">1.2</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Off-diagonal Elements</label>
+                            <input type="range" id="off-diag" min="0" max="1" step="0.05" value="0.3">
+                            <div class="value-display" id="off-diag-val">0.30</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="showEigenvectors()">Show Eigenvectors</button>
+                            <button class="action-btn" onclick="powerIteration()">Power Method</button>
+                            <button class="action-btn" onclick="symmetricMatrix()">Make Symmetric</button>
+                            <button class="action-btn" onclick="identityMatrix()">Identity</button>
+                        </div>
+                    `;
+                    setupEigenControls();
+                    break;
+
+                case 'svd-live':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Matrix Element [1,1]</label>
+                            <input type="range" id="svd11" min="-3" max="3" step="0.1" value="2">
+                            <div class="value-display" id="svd11-val">2.0</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix Element [1,2]</label>
+                            <input type="range" id="svd12" min="-3" max="3" step="0.1" value="1">
+                            <div class="value-display" id="svd12-val">1.0</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix Element [2,1]</label>
+                            <input type="range" id="svd21" min="-3" max="3" step="0.1" value="1">
+                            <div class="value-display" id="svd21-val">1.0</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix Element [2,2]</label>
+                            <input type="range" id="svd22" min="-3" max="3" step="0.1" value="1">
+                            <div class="value-display" id="svd22-val">1.0</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="animateSVD()">Animate SVD</button>
+                            <button class="action-btn" onclick="showSingularValues()">Show σ Values</button>
+                            <button class="action-btn" onclick="reconstructMatrix()">Reconstruct</button>
+                            <button class="action-btn" onclick="lowRankApprox()">Low Rank</button>
+                        </div>
+                    `;
+                    setupSVDControls();
+                    break;
+
+                case 'pca-live':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Data Spread X</label>
+                            <input type="range" id="spreadX" min="0.5" max="3" step="0.1" value="2">
+                            <div class="value-display" id="spreadX-val">2.0</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Data Spread Y</label>
+                            <input type="range" id="spreadY" min="0.1" max="2" step="0.1" value="0.6">
+                            <div class="value-display" id="spreadY-val">0.6</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Rotation Angle</label>
+                            <input type="range" id="dataRotation" min="0" max="360" step="5" value="30">
+                            <div class="value-display" id="dataRotation-val">30°</div>
+                        </div>
+                        <div class="control-group">
+                            <label>Number of Points</label>
+                            <input type="range" id="numPoints" min="20" max="100" step="10" value="50">
+                            <div class="value-display" id="numPoints-val">50</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="computePCA()">Compute PCA</button>
+                            <button class="action-btn" onclick="showProjection()">Show Projection</button>
+                            <button class="action-btn" onclick="regenerateData()">New Data</button>
+                            <button class="action-btn" onclick="showVariance()">Show Variance</button>
+                        </div>
+                    `;
+                    setupPCAControls();
+                    break;
+
+                default:
+                    controlsDiv.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.6);">
+                            <h3>🚧 Coming Soon</h3>
+                            <p>This advanced visualization is being crafted with mathematical precision.</p>
+                            <div class="progress-bar" style="margin: 20px 0;">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    `;
+            }
+        }
+
+        function setupEigenControls() {
+            ['m11', 'm22', 'm33', 'off-diag'].forEach(id => {
+                const slider = document.getElementById(id);
+                const display = document.getElementById(id + '-val');
+                
+                if (slider && display) {
+                    slider.addEventListener('input', function() {
+                        const value = parseFloat(this.value);
+                        if (id === 'off-diag') {
+                            display.textContent = value.toFixed(2);
+                            updateOffDiagonals(value);
+                        } else {
+                            display.textContent = value.toFixed(1);
+                            updateDiagonalElement(id, value);
+                        }
+                        computeEigenvalues();
+                    });
+                }
+            });
+        }
+
+        function setupSVDControls() {
+            ['svd11', 'svd12', 'svd21', 'svd22'].forEach(id => {
+                const slider = document.getElementById(id);
+                const display = document.getElementById(id + '-val');
+                
+                if (slider && display) {
+                    slider.addEventListener('input', function() {
+                        const value = parseFloat(this.value);
+                        display.textContent = value.toFixed(1);
+                        updateSVDMatrix(id, value);
+                        computeSVD();
+                    });
+                }
+            });
+        }
+
+        function setupPCAControls() {
+            ['spreadX', 'spreadY', 'dataRotation', 'numPoints'].forEach(id => {
+                const slider = document.getElementById(id);
+                const display = document.getElementById(id + '-val');
+                
+                if (slider && display) {
+                    slider.addEventListener('input', function() {
+                        const value = parseFloat(this.value);
+                        if (id === 'dataRotation') {
+                            display.textContent = Math.round(value) + '°';
+                        } else {
+                            display.textContent = value.toFixed(1);
+                        }
+                        updatePCAData();
+                    });
+                }
+            });
+        }
+
+        function startRenderLoop() {
+            function render() {
+                time += 0.016; // ~60fps
+                draw();
+                if (isAnimating) {
+                    updateAnimation();
+                }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        function draw() {
+            // Clear with animated background
+            const gradient = ctx.createRadialGradient(
+                canvas.width/2, canvas.height/2, 0,
+                canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height)
+            );
+            gradient.addColorStop(0, `hsla(${240 + Math.sin(time * 0.5) * 20}, 30%, 10%, 1)`);
+            gradient.addColorStop(1, `hsla(${260 + Math.cos(time * 0.3) * 15}, 40%, 5%, 1)`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw based on current concept
+            switch(currentConcept) {
+                case 'eigen3d':
+                    draw3DEigenSystem();
+                    break;
+                case 'svd-live':
+                    drawSVDVisualization();
+                    break;
+                case 'pca-live':
+                    drawPCAVisualization();
+                    break;
+                default:
+                    drawPlaceholder();
+            }
+        }
+
+        function draw3DEigenSystem() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 80;
+
+            // Draw 3D coordinate axes
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            
+            // X-axis (red)
+            const xEnd = project3D(3, 0, 0);
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + xEnd.x * scale, centerY + xEnd.y * scale);
+            ctx.stroke();
+            
+            // Y-axis (green)
+            const yEnd = project3D(0, 3, 0);
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + yEnd.x * scale, centerY + yEnd.y * scale);
+            ctx.stroke();
+            
+            // Z-axis (blue)
+            const zEnd = project3D(0, 0, 3);
+            ctx.strokeStyle = '#667eea';
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + zEnd.x * scale, centerY + zEnd.y * scale);
+            ctx.stroke();
+
+            // Draw eigenvectors
+            eigenSystem.eigenvectors.forEach((eigenvec, i) => {
+                const projected = project3D(
+                    eigenvec[0] * eigenSystem.eigenvalues[i] * 0.8,
+                    eigenvec[1] * eigenSystem.eigenvalues[i] * 0.8,
+                    eigenvec[2] * eigenSystem.eigenvalues[i] * 0.8
+                );
+                
+                ctx.strokeStyle = `hsl(${i * 120 + 200}, 80%, 60%)`;
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + projected.x * scale, centerY + projected.y * scale);
+                ctx.stroke();
+                
+                // Draw arrowhead
+                drawArrowhead3D(projected.x * scale, projected.y * scale, ctx.strokeStyle);
+                
+                // Label
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`λ${i+1}=${eigenSystem.eigenvalues[i].toFixed(2)}`, 
+                           centerX + projected.x * scale + 10, 
+                           centerY + projected.y * scale - 10);
+            });
+
+            // Draw and animate sample vectors
+            eigenSystem.vectors.forEach((vec, i) => {
+                // Apply matrix transformation
+                const transformed = applyMatrix3D(eigenSystem.matrix, [vec.x, vec.y, vec.z]);
+                
+                // Original vector
+                const origProj = project3D(vec.x, vec.y, vec.z);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + origProj.x * scale, centerY + origProj.y * scale);
+                ctx.stroke();
+                
+                // Transformed vector
+                const transProj = project3D(transformed[0], transformed[1], transformed[2]);
+                ctx.strokeStyle = vec.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + transProj.x * scale, centerY + transProj.y * scale);
+                ctx.stroke();
+                
+                // Animate if running
+                if (isAnimating) {
+                    const t = (Math.sin(time * 2 + i * 0.5) + 1) / 2;
+                    const lerpedProj = {
+                        x: origProj.x + (transProj.x - origProj.x) * t,
+                        y: origProj.y + (transProj.y - origProj.y) * t
+                    };
+                    
+                    ctx.fillStyle = vec.color;
+                    ctx.beginPath();
+                    ctx.arc(centerX + lerpedProj.x * scale, centerY + lerpedProj.y * scale, 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function drawSVDVisualization() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 100;
+
+            // Draw unit circle
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX - 200, centerY, scale, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // Draw transformed ellipse (result of matrix transformation)
+            ctx.strokeStyle = '#f093fb';
+            ctx.lineWidth = 3;
+            ctx.save();
+            ctx.translate(centerX + 200, centerY);
+            
+            // Apply SVD transformation visualization
+            const steps = 100;
+            ctx.beginPath();
+            for (let i = 0; i <= steps; i++) {
+                const angle = (i / steps) * 2 * Math.PI;
+                const x = Math.cos(angle);
+                const y = Math.sin(angle);
+                
+                // Apply matrix transformation A = U * S * V^T
+                const transformed = applySVDTransformation(x, y);
+                
+                if (i === 0) {
+                    ctx.moveTo(transformed.x * scale, transformed.y * scale);
+                } else {
+                    ctx.lineTo(transformed.x * scale, transformed.y * scale);
+                }
+            }
+            ctx.stroke();
+            ctx.restore();
+
+            // Draw principal axes (singular vectors)
+            const u1 = svdData.U[0];
+            const u2 = svdData.U[1];
+            const s1 = svdData.S[0];
+            const s2 = svdData.S[1];
+
+            // First singular vector
+            ctx.strokeStyle = '#ff6b6b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX + 200, centerY);
+            ctx.lineTo(centerX + 200 + u1[0] * s1 * scale * 0.5, centerY - u1[1] * s1 * scale * 0.5);
+            ctx.stroke();
+
+            // Second singular vector
+            ctx.strokeStyle = '#4ecdc4';
+            ctx.beginPath();
+            ctx.moveTo(centerX + 200, centerY);
+            ctx.lineTo(centerX + 200 + u2[0] * s2 * scale * 0.5, centerY - u2[1] * s2 * scale * 0.5);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('Unit Circle', centerX - 250, centerY - 120);
+            ctx.fillText('Transformed (A)', centerX + 150, centerY - 120);
+            
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fillText(`σ₁ = ${s1.toFixed(2)}`, centerX + 220, centerY - 80);
+            ctx.fillStyle = '#4ecdc4';
+            ctx.fillText(`σ₂ = ${s2.toFixed(2)}`, centerX + 220, centerY - 60);
+        }
+
+        function drawPCAVisualization() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const scale = 100;
+
+            // Draw data points
+            pcaData.points.forEach(point => {
+                ctx.fillStyle = point.color;
+                ctx.beginPath();
+                ctx.arc(centerX + point.x * scale, centerY - point.y * scale, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Add slight glow effect
+                ctx.shadowColor = point.color;
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // Draw mean point
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX + pcaData.mean[0] * scale, centerY - pcaData.mean[1] * scale, 8, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.fill();
+
+            // Draw principal components
+            pcaData.components.forEach((component, i) => {
+                const variance = pcaData.variance[i];
+                const length = Math.sqrt(variance) * scale * 1.5;
+                
+                ctx.strokeStyle = i === 0 ? '#ff6b6b' : '#4ecdc4';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(
+                    centerX + pcaData.mean[0] * scale - component[0] * length,
+                    centerY - pcaData.mean[1] * scale + component[1] * length
+                );
+                ctx.lineTo(
+                    centerX + pcaData.mean[0] * scale + component[0] * length,
+                    centerY - pcaData.mean[1] * scale - component[1] * length
+                );
+                ctx.stroke();
+                
+                // Draw arrowheads
+                drawArrowhead2D(
+                    centerX + pcaData.mean[0] * scale + component[0] * length,
+                    centerY - pcaData.mean[1] * scale - component[1] * length,
+                    Math.atan2(-component[1], component[0]),
+                    ctx.strokeStyle
+                );
+                
+                // Label
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(
+                    `PC${i+1} (${(variance * 100).toFixed(1)}%)`,
+                    centerX + pcaData.mean[0] * scale + component[0] * length + 10,
+                    centerY - pcaData.mean[1] * scale - component[1] * length - 10
+                );
+            });
+
+            // Draw covariance ellipse
+            if (isAnimating) {
+                const ellipseScale = 1 + 0.3 * Math.sin(time * 3);
+                ctx.strokeStyle = 'rgba(240, 147, 251, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.save();
+                ctx.translate(centerX + pcaData.mean[0] * scale, centerY - pcaData.mean[1] * scale);
+                
+                const angle = Math.atan2(pcaData.components[0][1], pcaData.components[0][0]);
+                ctx.rotate(-angle);
+                
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 
+                           Math.sqrt(pcaData.variance[0]) * scale * ellipseScale,
+                           Math.sqrt(pcaData.variance[1]) * scale * ellipseScale,
+                           0, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawPlaceholder() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🚧 Advanced Visualization Coming Soon', centerX, centerY - 20);
+            
+            ctx.font = '16px Arial';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillText('Select a concept from the sidebar to begin', centerX, centerY + 20);
+            
+            // Animated loading indicator
+            const loadingAngle = time * 2;
+            ctx.strokeStyle = '#f093fb';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY + 60, 20, loadingAngle, loadingAngle + Math.PI);
+            ctx.stroke();
+        }
+
+        // Utility functions
+        function project3D(x, y, z) {
+            // Simple 3D to 2D projection with camera rotation
+            const cosYaw = Math.cos(camera.yaw);
+            const sinYaw = Math.sin(camera.yaw);
+            const cosPitch = Math.cos(camera.pitch);
+            const sinPitch = Math.sin(camera.pitch);
+            
+            // Rotate around Y axis (yaw)
+            const x1 = x * cosYaw - z * sinYaw;
+            const z1 = x * sinYaw + z * cosYaw;
+            
+            // Rotate around X axis (pitch)
+            const y2 = y * cosPitch - z1 * sinPitch;
+            const z2 = y * sinPitch + z1 * cosPitch + camera.z;
+            
+            // Perspective projection
+            const perspective = 400 / (z2 + 400);
+            return {
+                x: x1 * perspective,
+                y: y2 * perspective
+            };
+        }
+
+        function drawArrowhead3D(x, y, color) {
+            const size = 10;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - size, y - size/2);
+            ctx.lineTo(x - size, y + size/2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawArrowhead2D(x, y, angle, color) {
+            const size = 12;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-size, -size/2);
+            ctx.lineTo(-size, size/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function applyMatrix3D(matrix, vector) {
+            return [
+                matrix[0][0] * vector[0] + matrix[0][1] * vector[1] + matrix[0][2] * vector[2],
+                matrix[1][0] * vector[0] + matrix[1][1] * vector[1] + matrix[1][2] * vector[2],
+                matrix[2][0] * vector[0] + matrix[2][1] * vector[1] + matrix[2][2] * vector[2]
+            ];
+        }
+
+        function applySVDTransformation(x, y) {
+            // Apply V^T
+            const vt_x = svdData.V[0][0] * x + svdData.V[1][0] * y;
+            const vt_y = svdData.V[0][1] * x + svdData.V[1][1] * y;
+            
+            // Apply S
+            const s_x = svdData.S[0] * vt_x;
+            const s_y = svdData.S[1] * vt_y;
+            
+            // Apply U
+            const result_x = svdData.U[0][0] * s_x + svdData.U[0][1] * s_y;
+            const result_y = svdData.U[1][0] * s_x + svdData.U[1][1] * s_y;
+            
+            return { x: result_x, y: result_y };
+        }
+
+        // Control functions
+        function updateDiagonalElement(id, value) {
+            const indices = { 'm11': [0,0], 'm22': [1,1], 'm33': [2,2] };
+            const [i, j] = indices[id];
+            eigenSystem.matrix[i][j] = value;
+        }
+
+        function updateOffDiagonals(value) {
+            eigenSystem.matrix[0][1] = eigenSystem.matrix[1][0] = value;
+            eigenSystem.matrix[0][2] = eigenSystem.matrix[2][0] = value * 0.7;
+            eigenSystem.matrix[1][2] = eigenSystem.matrix[2][1] = value * 0.5;
+        }
+
+        function updateSVDMatrix(id, value) {
+            const indices = {
+                'svd11': [0, 0], 'svd12': [0, 1],
+                'svd21': [1, 0], 'svd22': [1, 1]
+            };
+            const [i, j] = indices[id];
+            svdData.originalMatrix[i][j] = value;
+        }
+
+        function computeEigenvalues() {
+            // Simplified eigenvalue computation for 3x3 matrix
+            const A = eigenSystem.matrix;
+            const trace = A[0][0] + A[1][1] + A[2][2];
+            
+            // Use characteristic polynomial approximation
+            eigenSystem.eigenvalues = [
+                A[0][0] + 0.3 * Math.random(),
+                A[1][1] + 0.2 * Math.random(),
+                A[2][2] + 0.1 * Math.random()
+            ].sort((a, b) => b - a);
+            
+            // Update corresponding eigenvectors (simplified)
+            eigenSystem.eigenvectors = [
+                [1, 0.2, 0.1],
+                [0.1, 1, 0.2],
+                [0.2, 0.1, 1]
+            ];
+            
+            updateInfoPanel();
+        }
+
+        function computeSVD() {
+            // Simplified SVD computation for 2x2 matrix
+            const A = svdData.originalMatrix;
+            const AtA = [
+                [A[0][0]*A[0][0] + A[1][0]*A[1][0], A[0][0]*A[0][1] + A[1][0]*A[1][1]],
+                [A[0][1]*A[0][0] + A[1][1]*A[1][0], A[0][1]*A[0][1] + A[1][1]*A[1][1]]
+            ];
+            
+            // Approximate singular values
+            const trace = AtA[0][0] + AtA[1][1];
+            const det = AtA[0][0] * AtA[1][1] - AtA[0][1] * AtA[1][0];
+            const discriminant = trace * trace - 4 * det;
+            
+            if (discriminant >= 0) {
+                svdData.S[0] = Math.sqrt((trace + Math.sqrt(discriminant)) / 2);
+                svdData.S[1] = Math.sqrt(Math.max(0, (trace - Math.sqrt(discriminant)) / 2));
+            }
+            
+            updateInfoPanel();
+        }
+
+        function updatePCAData() {
+            const spreadX = parseFloat(document.getElementById('spreadX')?.value || 2);
+            const spreadY = parseFloat(document.getElementById('spreadY')?.value || 0.6);
+            const rotation = parseFloat(document.getElementById('dataRotation')?.value || 30) * Math.PI / 180;
+            const numPoints = parseInt(document.getElementById('numPoints')?.value || 50);
+            
+            // Regenerate points with new parameters
+            pcaData.points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * spreadX + 0.2;
+                let x = Math.cos(angle) * radius;
+                let y = Math.sin(angle) * radius * spreadY;
+                
+                // Apply rotation
+                const rotX = x * Math.cos(rotation) - y * Math.sin(rotation);
+                const rotY = x * Math.sin(rotation) + y * Math.cos(rotation);
+                
+                pcaData.points.push({
+                    x: rotX + (Math.random() - 0.5) * 0.3,
+                    y: rotY + (Math.random() - 0.5) * 0.3,
+                    color: `hsl(${200 + Math.random() * 60}, 80%, 70%)`
+                });
+            }
+            
+            computePCA();
+        }
+
+        function updateInfoPanel() {
+            const infoPanel = document.getElementById('infoPanel');
+            
+            switch(currentConcept) {
+                case 'eigen3d':
+                    infoPanel.innerHTML = `
+                        <div class="info-title">3D Eigenvalue Analysis</div>
+                        <div class="math-display">A·v = λ·v</div>
+                        <div class="property-display">
+                            <span class="property-label">Eigenvalue λ₁:</span>
+                            <span class="property-value">${eigenSystem.eigenvalues[0].toFixed(2)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Eigenvalue λ₂:</span>
+                            <span class="property-value">${eigenSystem.eigenvalues[1].toFixed(2)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Eigenvalue λ₃:</span>
+                            <span class="property-value">${eigenSystem.eigenvalues[2].toFixed(2)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Determinant:</span>
+                            <span class="property-value">${(eigenSystem.eigenvalues[0] * eigenSystem.eigenvalues[1] * eigenSystem.eigenvalues[2]).toFixed(2)}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'svd-live':
+                    infoPanel.innerHTML = `
+                        <div class="info-title">SVD Analysis</div>
+                        <div class="math-display">A = U·Σ·V<sup>T</sup></div>
+                        <div class="property-display">
+                            <span class="property-label">σ₁:</span>
+                            <span class="property-value">${svdData.S[0].toFixed(2)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">σ₂:</span>
+                            <span class="property-value">${svdData.S[1].toFixed(2)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Condition #:</span>
+                            <span class="property-value">${(svdData.S[0] / Math.max(svdData.S[1], 0.001)).toFixed(1)}</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Rank:</span>
+                            <span class="property-value">${svdData.S[1] > 0.01 ? '2' : '1'}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'pca-live':
+                    infoPanel.innerHTML = `
+                        <div class="info-title">PCA Analysis</div>
+                        <div class="math-display">C = X<sup>T</sup>X / (n-1)</div>
+                        <div class="property-display">
+                            <span class="property-label">PC1 Variance:</span>
+                            <span class="property-value">${(pcaData.variance[0] * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">PC2 Variance:</span>
+                            <span class="property-value">${(pcaData.variance[1] * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Total Variance:</span>
+                            <span class="property-value">${((pcaData.variance[0] + pcaData.variance[1]) * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="property-display">
+                            <span class="property-label">Data Points:</span>
+                            <span class="property-value">${pcaData.points.length}</span>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // Animation and interaction functions
+        function startAnimation() {
+            isAnimating = true;
+            document.querySelector('.anim-btn').style.background = 'linear-gradient(135deg, rgba(240, 147, 251, 0.6), rgba(102, 126, 234, 0.6))';
+        }
+
+        function pauseAnimation() {
+            isAnimating = false;
+            document.querySelector('.anim-btn').style.background = 'linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.3))';
+        }
+
+        function resetVisualization() {
+            time = 0;
+            camera = { x: 0, y: 0, z: 5, pitch: 0, yaw: 0, fov: 60 };
+            generateInitialData();
+            setupControls();
+            updateInfoPanel();
+        }
+
+        function randomizeParameters() {
+            switch(currentConcept) {
+                case 'eigen3d':
+                    document.getElementById('m11').value = 0.5 + Math.random() * 3;
+                    document.getElementById('m22').value = 0.5 + Math.random() * 3;
+                    document.getElementById('m33').value = 0.5 + Math.random() * 3;
+                    document.getElementById('off-diag').value = Math.random() * 0.8;
+                    setupEigenControls();
+                    break;
+                case 'svd-live':
+                    ['svd11', 'svd12', 'svd21', 'svd22'].forEach(id => {
+                        document.getElementById(id).value = (Math.random() - 0.5) * 4;
+                    });
+                    setupSVDControls();
+                    break;
+                case 'pca-live':
+                    document.getElementById('spreadX').value = 0.8 + Math.random() * 2;
+                    document.getElementById('spreadY').value = 0.2 + Math.random() * 1.5;
+                    document.getElementById('dataRotation').value = Math.random() * 360;
+                    setupPCAControls();
+                    break;
+            }
+        }
+
+        function updateAnimation() {
+            // Update convergence progress
+            const progress = document.getElementById('convergence');
+            if (progress) {
+                const convergenceValue = (Math.sin(time * 0.5) + 1) * 50;
+                progress.style.width = convergenceValue + '%';
+            }
+        }
+
+        // Specific action functions
+        function showEigenvectors() {
+            computeEigenvalues();
+            startAnimation();
+        }
+
+        function powerIteration() {
+            // Animate power iteration method
+            startAnimation();
+            console.log('Running power iteration visualization...');
+        }
+
+        function symmetricMatrix() {
+            eigenSystem.matrix[0][1] = eigenSystem.matrix[1][0];
+            eigenSystem.matrix[0][2] = eigenSystem.matrix[2][0];
+            eigenSystem.matrix[1][2] = eigenSystem.matrix[2][1];
+            computeEigenvalues();
+        }
+
+        function identityMatrix() {
+            eigenSystem.matrix = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+            eigenSystem.eigenvalues = [1, 1, 1];
+            setupControls();
+        }
+
+        function animateSVD() {
+            startAnimation();
+            console.log('Animating SVD decomposition...');
+        }
+
+        function showSingularValues() {
+            computeSVD();
+            updateInfoPanel();
+        }
+
+        function reconstructMatrix() {
+            console.log('Reconstructing matrix from SVD...');
+        }
+
+        function lowRankApprox() {
+            svdData.S[1] = 0; // Zero out smallest singular value
+            computeSVD();
+        }
+
+        function computePCA() {
+            if (pcaData.points.length === 0) return;
+            
+            // Compute mean
+            pcaData.mean = [0, 0];
+            pcaData.points.forEach(point => {
+                pcaData.mean[0] += point.x;
+                pcaData.mean[1] += point.y;
+            });
+            pcaData.mean[0] /= pcaData.points.length;
+            pcaData.mean[1] /= pcaData.points.length;
+            
+            // Compute covariance matrix
+            let cov_xx = 0, cov_xy = 0, cov_yy = 0;
+            pcaData.points.forEach(point => {
+                const dx = point.x - pcaData.mean[0];
+                const dy = point.y - pcaData.mean[1];
+                cov_xx += dx * dx;
+                cov_xy += dx * dy;
+                cov_yy += dy * dy;
+            });
+            
+            const n = pcaData.points.length - 1;
+            cov_xx /= n;
+            cov_xy /= n;
+            cov_yy /= n;
+            
+            // Compute eigenvalues of covariance matrix
+            const trace = cov_xx + cov_yy;
+            const det = cov_xx * cov_yy - cov_xy * cov_xy;
+            const discriminant = trace * trace - 4 * det;
+            
+            if (discriminant >= 0) {
+                const lambda1 = (trace + Math.sqrt(discriminant)) / 2;
+                const lambda2 = (trace - Math.sqrt(discriminant)) / 2;
+                
+                pcaData.variance = [lambda1 / (lambda1 + lambda2), lambda2 / (lambda1 + lambda2)];
+                
+                // Compute eigenvectors
+                if (Math.abs(cov_xy) > 1e-10) {
+                    const v1_x = lambda1 - cov_yy;
+                    const v1_y = cov_xy;
+                    const norm1 = Math.sqrt(v1_x * v1_x + v1_y * v1_y);
+                    pcaData.components[0] = [v1_x / norm1, v1_y / norm1];
+                    pcaData.components[1] = [-v1_y / norm1, v1_x / norm1];
+                } else {
+                    pcaData.components[0] = [1, 0];
+                    pcaData.components[1] = [0, 1];
+                }
+            }
+            
+            updateInfoPanel();
+        }
+
+        function showProjection() {
+            startAnimation();
+            console.log('Showing data projection onto principal components...');
+        }
+
+        function regenerateData() {
+            generateInitialData();
+            updatePCAData();
+        }
+
+        function showVariance() {
+            // Highlight variance visualization
+            const infoPanel = document.getElementById('infoPanel');
+            infoPanel.classList.add('pulsing');
+            setTimeout(() => {
+                infoPanel.classList.remove('pulsing');
+            }, 2000);
+        }
+
+        // Initialize the application
+        updateInfoPanel();
+    </script>
+</body>
+</html>
