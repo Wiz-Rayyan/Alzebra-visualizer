@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Algebra Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .playground {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(20, 20, 30, 0.95);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #333;
+        }
+
+        .main-canvas {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #64ffda;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .concept-selector {
+            margin-bottom: 30px;
+        }
+
+        .concept-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .concept-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .concept-btn.active {
+            background: linear-gradient(45deg, #64ffda, #00bcd4);
+            box-shadow: 0 4px 15px rgba(100, 255, 218, 0.4);
+        }
+
+        .controls {
+            background: rgba(40, 40, 50, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #64ffda;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            cursor: pointer;
+        }
+
+        .value-display {
+            color: #fff;
+            font-size: 11px;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
+            border: 1px solid #64ffda;
+        }
+
+        .formula {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid #64ffda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #64ffda;
+        }
+
+        .vector-info {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .animation-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .anim-btn {
+            padding: 12px 20px;
+            background: rgba(100, 255, 218, 0.2);
+            border: 2px solid #64ffda;
+            border-radius: 25px;
+            color: #64ffda;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .anim-btn:hover {
+            background: rgba(100, 255, 218, 0.4);
+            transform: scale(1.1);
+        }
+
+        .grid-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="playground">
+        <div class="sidebar">
+            <h1>🎯 Linear Algebra Lab</h1>
+            
+            <div class="concept-selector">
+                <button class="concept-btn active" data-concept="vectors">🔸 Vector Operations</button>
+                <button class="concept-btn" data-concept="dot-product">📐 Dot Product & Angles</button>
+                <button class="concept-btn" data-concept="transformations">🔄 Matrix Transformations</button>
+                <button class="concept-btn" data-concept="eigenvalues">⚡ Eigenvalues</button>
+                <button class="concept-btn" data-concept="cross-product">✖️ Cross Product 3D</button>
+                <button class="concept-btn" data-concept="svd">🎭 SVD Decomposition</button>
+            </div>
+
+            <div class="controls" id="controls">
+                <!-- Dynamic controls will be inserted here -->
+            </div>
+        </div>
+
+        <div class="main-canvas">
+            <div class="grid-toggle" onclick="toggleGrid()">📊 Grid</div>
+            <canvas id="mainCanvas"></canvas>
+            
+            <div class="info-panel" id="infoPanel">
+                <!-- Dynamic info will be shown here -->
+            </div>
+
+            <div class="animation-controls">
+                <button class="anim-btn" onclick="playAnimation()">▶️ Animate</button>
+                <button class="anim-btn" onclick="resetView()">↻ Reset</button>
+                <button class="anim-btn" onclick="randomize()">🎲 Random</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let canvas, ctx;
+        let currentConcept = 'vectors';
+        let showGrid = true;
+        let isAnimating = false;
+        let animationFrame = 0;
+        let mousePos = { x: 0, y: 0 };
+        let isDragging = false;
+        let dragTarget = null;
+
+        // Vector and matrix state
+        let vectors = {
+            a: { x: 3, y: 2, color: '#ff6b6b', draggable: true },
+            b: { x: 1, y: 3, color: '#4ecdc4', draggable: true },
+            result: { x: 0, y: 0, color: '#64ffda', draggable: false }
+        };
+
+        let matrix = {
+            a: 1, b: 0,
+            c: 0, d: 1
+        };
+
+        let settings = {
+            scale: 40,
+            centerX: 0,
+            centerY: 0,
+            gridSize: 1,
+            showVectorTails: true,
+            showProjections: false
+        };
+
+        // Initialize
+        window.addEventListener('load', function() {
+            canvas = document.getElementById('mainCanvas');
+            ctx = canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            setupEventListeners();
+            setupControls();
+            startRenderLoop();
+        });
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            settings.centerX = canvas.width / 2;
+            settings.centerY = canvas.height / 2;
+        }
+
+        function setupEventListeners() {
+            // Mouse events for dragging vectors
+            canvas.addEventListener('mousedown', onMouseDown);
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('mouseup', onMouseUp);
+            canvas.addEventListener('wheel', onWheel);
+
+            // Concept selector
+            document.querySelectorAll('.concept-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.concept-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentConcept = this.dataset.concept;
+                    setupControls();
+                });
+            });
+        }
+
+        function onMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            mousePos.x = e.clientX - rect.left;
+            mousePos.y = e.clientY - rect.top;
+            
+            // Check if clicking on a draggable vector
+            const clickedVector = getVectorAtPosition(mousePos.x, mousePos.y);
+            if (clickedVector) {
+                isDragging = true;
+                dragTarget = clickedVector;
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function onMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            mousePos.x = e.clientX - rect.left;
+            mousePos.y = e.clientY - rect.top;
+            
+            if (isDragging && dragTarget) {
+                // Convert screen coordinates to vector space
+                const worldX = (mousePos.x - settings.centerX) / settings.scale;
+                const worldY = -(mousePos.y - settings.centerY) / settings.scale;
+                
+                dragTarget.x = worldX;
+                dragTarget.y = worldY;
+                
+                updateCalculations();
+            }
+            
+            // Update cursor
+            const hoveredVector = getVectorAtPosition(mousePos.x, mousePos.y);
+            canvas.style.cursor = hoveredVector ? 'grab' : 'crosshair';
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+            dragTarget = null;
+            canvas.style.cursor = 'crosshair';
+        }
+
+        function onWheel(e) {
+            e.preventDefault();
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            settings.scale = Math.max(10, Math.min(100, settings.scale * zoomFactor));
+        }
+
+        function getVectorAtPosition(x, y) {
+            for (let key in vectors) {
+                const vector = vectors[key];
+                if (!vector.draggable) continue;
+                
+                const screenX = settings.centerX + vector.x * settings.scale;
+                const screenY = settings.centerY - vector.y * settings.scale;
+                
+                const distance = Math.sqrt((x - screenX) ** 2 + (y - screenY) ** 2);
+                if (distance < 20) return vector;
+            }
+            return null;
+        }
+
+        function setupControls() {
+            const controlsDiv = document.getElementById('controls');
+            
+            switch(currentConcept) {
+                case 'vectors':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Vector A - X: <span class="value-display" id="vecAX">${vectors.a.x.toFixed(1)}</span></label>
+                            <input type="range" id="vectorAX" min="-5" max="5" step="0.1" value="${vectors.a.x}">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector A - Y: <span class="value-display" id="vecAY">${vectors.a.y.toFixed(1)}</span></label>
+                            <input type="range" id="vectorAY" min="-5" max="5" step="0.1" value="${vectors.a.y}">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector B - X: <span class="value-display" id="vecBX">${vectors.b.x.toFixed(1)}</span></label>
+                            <input type="range" id="vectorBX" min="-5" max="5" step="0.1" value="${vectors.b.x}">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector B - Y: <span class="value-display" id="vecBY">${vectors.b.y.toFixed(1)}</span></label>
+                            <input type="range" id="vectorBY" min="-5" max="5" step="0.1" value="${vectors.b.y}">
+                        </div>
+                        <button class="action-btn" onclick="showAddition()">Show A + B</button>
+                        <button class="action-btn" onclick="showSubtraction()">Show A - B</button>
+                        <button class="action-btn" onclick="showParallelogram()">Parallelogram Law</button>
+                    `;
+                    setupVectorControls();
+                    break;
+                    
+                case 'dot-product':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Vector U Angle: <span class="value-display" id="angleUDisplay">30°</span></label>
+                            <input type="range" id="angleU" min="0" max="360" step="1" value="30">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector U Magnitude: <span class="value-display" id="magUDisplay">3.0</span></label>
+                            <input type="range" id="magU" min="0.5" max="5" step="0.1" value="3">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector V Angle: <span class="value-display" id="angleVDisplay">60°</span></label>
+                            <input type="range" id="angleV" min="0" max="360" step="1" value="60">
+                        </div>
+                        <div class="control-group">
+                            <label>Vector V Magnitude: <span class="value-display" id="magVDisplay">2.5</span></label>
+                            <input type="range" id="magV" min="0.5" max="5" step="0.1" value="2.5">
+                        </div>
+                        <button class="action-btn" onclick="toggleProjections()">Toggle Projections</button>
+                        <button class="action-btn" onclick="showAngleArc()">Show Angle</button>
+                    `;
+                    setupDotProductControls();
+                    break;
+                    
+                case 'transformations':
+                    controlsDiv.innerHTML = `
+                        <div class="control-group">
+                            <label>Matrix [a]: <span class="value-display" id="matADisplay">1.0</span></label>
+                            <input type="range" id="matrixA" min="-2" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix [b]: <span class="value-display" id="matBDisplay">0.0</span></label>
+                            <input type="range" id="matrixB" min="-2" max="2" step="0.1" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix [c]: <span class="value-display" id="matCDisplay">0.0</span></label>
+                            <input type="range" id="matrixC" min="-2" max="2" step="0.1" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Matrix [d]: <span class="value-display" id="matDDisplay">1.0</span></label>
+                            <input type="range" id="matrixD" min="-2" max="2" step="0.1" value="1">
+                        </div>
+                        <button class="action-btn" onclick="presetRotation()">Rotation</button>
+                        <button class="action-btn" onclick="presetShear()">Shear</button>
+                        <button class="action-btn" onclick="presetScale()">Scale</button>
+                    `;
+                    setupTransformControls();
+                    break;
+            }
+        }
+
+        function setupVectorControls() {
+            ['vectorAX', 'vectorAY', 'vectorBX', 'vectorBY'].forEach(id => {
+                const slider = document.getElementById(id);
+                if (slider) {
+                    slider.addEventListener('input', function() {
+                        const vectorKey = id.includes('A') ? 'a' : 'b';
+                        const component = id.includes('X') ? 'x' : 'y';
+                        vectors[vectorKey][component] = parseFloat(this.value);
+                        
+                        document.getElementById(`vec${vectorKey.toUpperCase()}${component.toUpperCase()}`).textContent = 
+                            parseFloat(this.value).toFixed(1);
+                        
+                        updateCalculations();
+                    });
+                }
+            });
+        }
+
+        function setupDotProductControls() {
+            document.getElementById('angleU').addEventListener('input', function() {
+                document.getElementById('angleUDisplay').textContent = this.value + '°';
+                updateDotProductVectors();
+            });
+            
+            document.getElementById('magU').addEventListener('input', function() {
+                document.getElementById('magUDisplay').textContent = parseFloat(this.value).toFixed(1);
+                updateDotProductVectors();
+            });
+            
+            document.getElementById('angleV').addEventListener('input', function() {
+                document.getElementById('angleVDisplay').textContent = this.value + '°';
+                updateDotProductVectors();
+            });
+            
+            document.getElementById('magV').addEventListener('input', function() {
+                document.getElementById('magVDisplay').textContent = parseFloat(this.value).toFixed(1);
+                updateDotProductVectors();
+            });
+        }
+
+        function setupTransformControls() {
+            ['matrixA', 'matrixB', 'matrixC', 'matrixD'].forEach(id => {
+                const slider = document.getElementById(id);
+                if (slider) {
+                    slider.addEventListener('input', function() {
+                        const key = id.replace('matrix', '').toLowerCase();
+                        matrix[key] = parseFloat(this.value);
+                        document.getElementById(`mat${key.toUpperCase()}Display`).textContent = 
+                            parseFloat(this.value).toFixed(1);
+                    });
+                }
+            });
+        }
+
+        function updateCalculations() {
+            if (currentConcept === 'vectors') {
+                vectors.result.x = vectors.a.x + vectors.b.x;
+                vectors.result.y = vectors.a.y + vectors.b.y;
+            }
+        }
+
+        function updateDotProductVectors() {
+            const angleU = parseFloat(document.getElementById('angleU').value) * Math.PI / 180;
+            const angleV = parseFloat(document.getElementById('angleV').value) * Math.PI / 180;
+            const magU = parseFloat(document.getElementById('magU').value);
+            const magV = parseFloat(document.getElementById('magV').value);
+            
+            vectors.a.x = magU * Math.cos(angleU);
+            vectors.a.y = magU * Math.sin(angleU);
+            vectors.b.x = magV * Math.cos(angleV);
+            vectors.b.y = magV * Math.sin(angleV);
+        }
+
+        function startRenderLoop() {
+            function render() {
+                draw();
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (showGrid) drawGrid();
+            drawAxes();
+            
+            switch(currentConcept) {
+                case 'vectors':
+                    drawVectors();
+                    updateVectorInfo();
+                    break;
+                case 'dot-product':
+                    drawDotProduct();
+                    updateDotProductInfo();
+                    break;
+                case 'transformations':
+                    drawTransformation();
+                    updateTransformInfo();
+                    break;
+            }
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(100, 255, 218, 0.1)';
+            ctx.lineWidth = 1;
+            
+            const gridSpacing = settings.scale * settings.gridSize;
+            
+            // Vertical lines
+            for (let x = settings.centerX % gridSpacing; x < canvas.width; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = settings.centerY % gridSpacing; y < canvas.height; y += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            
+            // X-axis
+            ctx.beginPath();
+            ctx.moveTo(0, settings.centerY);
+            ctx.lineTo(canvas.width, settings.centerY);
+            ctx.stroke();
+            
+            // Y-axis
+            ctx.beginPath();
+            ctx.moveTo(settings.centerX, 0);
+            ctx.lineTo(settings.centerX, canvas.height);
+            ctx.stroke();
+        }
+
+        function drawVector(vector, startX = 0, startY = 0, label = '') {
+            const screenStartX = settings.centerX + startX * settings.scale;
+            const screenStartY = settings.centerY - startY * settings.scale;
+            const screenEndX = settings.centerX + (startX + vector.x) * settings.scale;
+            const screenEndY = settings.centerY - (startY + vector.y) * settings.scale;
+            
+            // Vector line
+            ctx.strokeStyle = vector.color;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(screenStartX, screenStartY);
+            ctx.lineTo(screenEndX, screenEndY);
+            ctx.stroke();
+            
+            // Arrowhead
+            const angle = Math.atan2(screenEndY - screenStartY, screenEndX - screenStartX);
+            const arrowLength = 15;
+            const arrowAngle = Math.PI / 6;
+            
+            ctx.beginPath();
+            ctx.moveTo(screenEndX, screenEndY);
+            ctx.lineTo(
+                screenEndX - arrowLength * Math.cos(angle - arrowAngle),
+                screenEndY - arrowLength * Math.sin(angle - arrowAngle)
+            );
+            ctx.moveTo(screenEndX, screenEndY);
+            ctx.lineTo(
+                screenEndX - arrowLength * Math.cos(angle + arrowAngle),
+                screenEndY - arrowLength * Math.sin(angle + arrowAngle)
+            );
+            ctx.stroke();
+            
+            // Label
+            if (label) {
+                ctx.fillStyle = vector.color;
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(label, screenEndX + 10, screenEndY - 10);
+            }
+            
+            // Draggable indicator
+            if (vector.draggable) {
+                ctx.fillStyle = vector.color;
+                ctx.beginPath();
+                ctx.arc(screenEndX, screenEndY, 8, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function drawVectors() {
+            drawVector(vectors.a, 0, 0, 'A');
+            drawVector(vectors.b, 0, 0, 'B');
+            
+            // Show addition result
+            drawVector(vectors.result, 0, 0, 'A+B');
+            
+            // Show parallelogram construction
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            
+            // From A to A+B
+            ctx.beginPath();
+            ctx.moveTo(settings.centerX + vectors.a.x * settings.scale, settings.centerY - vectors.a.y * settings.scale);
+            ctx.lineTo(settings.centerX + vectors.result.x * settings.scale, settings.centerY - vectors.result.y * settings.scale);
+            ctx.stroke();
+            
+            // From B to A+B
+            ctx.beginPath();
+            ctx.moveTo(settings.centerX + vectors.b.x * settings.scale, settings.centerY - vectors.b.y * settings.scale);
+            ctx.lineTo(settings.centerX + vectors.result.x * settings.scale, settings.centerY - vectors.result.y * settings.scale);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+        }
+
+        function drawDotProduct() {
+            updateDotProductVectors();
+            
+            drawVector(vectors.a, 0, 0, 'U');
+            drawVector(vectors.b, 0, 0, 'V');
+            
+            // Draw angle arc
+            const angleU = Math.atan2(vectors.a.y, vectors.a.x);
+            const angleV = Math.atan2(vectors.b.y, vectors.b.x);
+            const startAngle = Math.min(angleU, angleV);
+            const endAngle = Math.max(angleU, angleV);
+            
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(settings.centerX, settings.centerY, 50, -endAngle, -startAngle);
+            ctx.stroke();
+            
+            // Show projection if enabled
+            if (settings.showProjections) {
+                const dotProduct = vectors.a.x * vectors.b.x + vectors.a.y * vectors.b.y;
+                const magV = Math.sqrt(vectors.b.x * vectors.b.x + vectors.b.y * vectors.b.y);
+                const projLength = dotProduct / magV;
+                
+                const projX = projLength * vectors.b.x / magV;
+                const projY = projLength * vectors.b.y / magV;
+                
+                // Projection vector
+                ctx.strokeStyle = 'rgba(255, 107, 107, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(settings.centerX, settings.centerY);
+                ctx.lineTo(settings.centerX + projX * settings.scale, settings.centerY - projY * settings.scale);
+                ctx.stroke();
+                
+                // Projection line
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(settings.centerX + vectors.a.x * settings.scale, settings.centerY - vectors.a.y * settings.scale);
+                ctx.lineTo(settings.centerX + projX * settings.scale, settings.centerY - projY * settings.scale);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function drawTransformation() {
+            // Draw original unit square
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            const unitSize = settings.scale;
+            
+            ctx.strokeRect(settings.centerX - unitSize/2, settings.centerY - unitSize/2, unitSize, unitSize);
+            
+            // Draw transformed square
+            const corners = [
+                [-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]
+            ];
+            
+            ctx.strokeStyle = '#64ffda';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            corners.forEach((corner, i) => {
+                const x = corner[0];
+                const y = corner[1];
+                
+                // Apply transformation
+                const tx = matrix.a * x + matrix.b * y;
+                const ty = matrix.c * x + matrix.d * y;
+                
+                const screenX = settings.centerX + tx * settings.scale;
+                const screenY = settings.centerY - ty * settings.scale;
+                
+                if (i === 0) {
+                    ctx.moveTo(screenX, screenY);
+                } else {
+                    ctx.lineTo(screenX, screenY);
+                }
+            });
+            ctx.closePath();
+            ctx.stroke();
+            
+            // Draw basis vectors
+            drawVector({x: matrix.a, y: matrix.c, color: '#ff6b6b', draggable: false}, 0, 0, 'î');
+            drawVector({x: matrix.b, y: matrix.d, color: '#4ecdc4', draggable: false}, 0, 0, 'ĵ');
+            
+            // Draw transformed grid
+            ctx.strokeStyle = 'rgba(100, 255, 218, 0.2)';
+            ctx.lineWidth = 1;
+            
+            for (let i = -5; i <= 5; i++) {
+                for (let j = 0; j <= 1; j += 0.1) {
+                    const x1 = i + j;
+                    const y1 = -3;
+                    const x2 = i + j;
+                    const y2 = 3;
+                    
+                    const tx1 = matrix.a * x1 + matrix.b * y1;
+                    const ty1 = matrix.c * x1 + matrix.d * y1;
+                    const tx2 = matrix.a * x2 + matrix.b * y2;
+                    const ty2 = matrix.c * x2 + matrix.d * y2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(settings.centerX + tx1 * settings.scale, settings.centerY - ty1 * settings.scale);
+                    ctx.lineTo(settings.centerX + tx2 * settings.scale, settings.centerY - ty2 * settings.scale);
+                    ctx.stroke();
+                }
+                
+                for (let j = 0; j <= 1; j += 0.1) {
+                    const x1 = -3;
+                    const y1 = i + j;
+                    const x2 = 3;
+                    const y2 = i + j;
+                    
+                    const tx1 = matrix.a * x1 + matrix.b * y1;
+                    const ty1 = matrix.c * x1 + matrix.d * y1;
+                    const tx2 = matrix.a * x2 + matrix.b * y2;
+                    const ty2 = matrix.c * x2 + matrix.d * y2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(settings.centerX + tx1 * settings.scale, settings.centerY - ty1 * settings.scale);
+                    ctx.lineTo(settings.centerX + tx2 * settings.scale, settings.centerY - ty2 * settings.scale);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function updateVectorInfo() {
+            const infoPanel = document.getElementById('infoPanel');
+            const magnitude_a = Math.sqrt(vectors.a.x ** 2 + vectors.a.y ** 2);
+            const magnitude_b = Math.sqrt(vectors.b.x ** 2 + vectors.b.y ** 2);
+            const magnitude_result = Math.sqrt(vectors.result.x ** 2 + vectors.result.y ** 2);
+            
+            infoPanel.innerHTML = `
+                <div class="formula">Vector Operations</div>
+                <div class="vector-info">
+                    <strong>Vector A:</strong> (${vectors.a.x.toFixed(2)}, ${vectors.a.y.toFixed(2)})<br>
+                    <strong>|A|:</strong> ${magnitude_a.toFixed(2)}
+                </div>
+                <div class="vector-info">
+                    <strong>Vector B:</strong> (${vectors.b.x.toFixed(2)}, ${vectors.b.y.toFixed(2)})<br>
+                    <strong>|B|:</strong> ${magnitude_b.toFixed(2)}
+                </div>
+                <div class="vector-info" style="border-color: #64ffda;">
+                    <strong>A + B:</strong> (${vectors.result.x.toFixed(2)}, ${vectors.result.y.toFixed(2)})<br>
+                    <strong>|A + B|:</strong> ${magnitude_result.toFixed(2)}
+                </div>
+                <div class="formula">
+                    A + B = (${vectors.a.x.toFixed(1)} + ${vectors.b.x.toFixed(1)}, ${vectors.a.y.toFixed(1)} + ${vectors.b.y.toFixed(1)})
+                </div>
+            `;
+        }
+
+        function updateDotProductInfo() {
+            const infoPanel = document.getElementById('infoPanel');
+            const dotProduct = vectors.a.x * vectors.b.x + vectors.a.y * vectors.b.y;
+            const magnitude_a = Math.sqrt(vectors.a.x ** 2 + vectors.a.y ** 2);
+            const magnitude_b = Math.sqrt(vectors.b.x ** 2 + vectors.b.y ** 2);
+            const cosTheta = dotProduct / (magnitude_a * magnitude_b);
+            const thetaDegrees = Math.acos(Math.max(-1, Math.min(1, cosTheta))) * 180 / Math.PI;
+            
+            infoPanel.innerHTML = `
+                <div class="formula">Dot Product Analysis</div>
+                <div class="vector-info">
+                    <strong>U:</strong> (${vectors.a.x.toFixed(2)}, ${vectors.a.y.toFixed(2)})<br>
+                    <strong>|U|:</strong> ${magnitude_a.toFixed(2)}
+                </div>
+                <div class="vector-info">
+                    <strong>V:</strong> (${vectors.b.x.toFixed(2)}, ${vectors.b.y.toFixed(2)})<br>
+                    <strong>|V|:</strong> ${magnitude_b.toFixed(2)}
+                </div>
+                <div class="vector-info" style="border-color: #ffff00;">
+                    <strong>U · V:</strong> ${dotProduct.toFixed(2)}<br>
+                    <strong>cos θ:</strong> ${cosTheta.toFixed(3)}<br>
+                    <strong>θ:</strong> ${thetaDegrees.toFixed(1)}°
+                </div>
+                <div class="formula">
+                    U · V = |U| |V| cos θ<br>
+                    = ${magnitude_a.toFixed(1)} × ${magnitude_b.toFixed(1)} × ${cosTheta.toFixed(2)}
+                </div>
+            `;
+        }
+
+        function updateTransformInfo() {
+            const infoPanel = document.getElementById('infoPanel');
+            const determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+            const trace = matrix.a + matrix.d;
+            
+            // Eigenvalue calculation for 2x2 matrix
+            const discriminant = trace * trace - 4 * determinant;
+            let eigenInfo = '';
+            
+            if (discriminant >= 0) {
+                const lambda1 = (trace + Math.sqrt(discriminant)) / 2;
+                const lambda2 = (trace - Math.sqrt(discriminant)) / 2;
+                eigenInfo = `<strong>λ₁:</strong> ${lambda1.toFixed(2)}<br><strong>λ₂:</strong> ${lambda2.toFixed(2)}`;
+            } else {
+                const real = trace / 2;
+                const imag = Math.sqrt(-discriminant) / 2;
+                eigenInfo = `<strong>λ:</strong> ${real.toFixed(2)} ± ${imag.toFixed(2)}i`;
+            }
+            
+            infoPanel.innerHTML = `
+                <div class="formula">Matrix Transformation</div>
+                <div class="vector-info">
+                    <strong>Matrix:</strong><br>
+                    [${matrix.a.toFixed(2)}, ${matrix.b.toFixed(2)}]<br>
+                    [${matrix.c.toFixed(2)}, ${matrix.d.toFixed(2)}]
+                </div>
+                <div class="vector-info">
+                    <strong>Det:</strong> ${determinant.toFixed(2)}<br>
+                    <strong>Trace:</strong> ${trace.toFixed(2)}
+                </div>
+                <div class="vector-info" style="border-color: #64ffda;">
+                    ${eigenInfo}
+                </div>
+                <div class="formula">
+                    T(x) = Ax where A = [a b; c d]<br>
+                    Area scaling: |det(A)| = ${Math.abs(determinant).toFixed(2)}
+                </div>
+            `;
+        }
+
+        // Animation and interaction functions
+        function playAnimation() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            animationFrame = 0;
+            
+            const animate = () => {
+                animationFrame++;
+                
+                switch(currentConcept) {
+                    case 'vectors':
+                        animateVectorAddition();
+                        break;
+                    case 'dot-product':
+                        animateDotProduct();
+                        break;
+                    case 'transformations':
+                        animateTransformation();
+                        break;
+                }
+                
+                if (animationFrame < 120 && isAnimating) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isAnimating = false;
+                }
+            };
+            
+            animate();
+        }
+
+        function animateVectorAddition() {
+            const t = (Math.sin(animationFrame * 0.05) + 1) / 2;
+            
+            // Animate vectors scaling up and down
+            const originalA = { x: 3, y: 2 };
+            const originalB = { x: 1, y: 3 };
+            
+            vectors.a.x = originalA.x * (0.5 + 0.5 * t);
+            vectors.a.y = originalA.y * (0.5 + 0.5 * t);
+            vectors.b.x = originalB.x * (0.5 + 0.5 * (1 - t));
+            vectors.b.y = originalB.y * (0.5 + 0.5 * (1 - t));
+            
+            updateCalculations();
+        }
+
+        function animateDotProduct() {
+            const t = animationFrame / 120;
+            
+            // Rotate vectors around each other
+            const baseAngleU = 30;
+            const baseAngleV = 60;
+            
+            document.getElementById('angleU').value = baseAngleU + 30 * Math.sin(t * Math.PI * 2);
+            document.getElementById('angleV').value = baseAngleV + 20 * Math.cos(t * Math.PI * 2);
+            
+            document.getElementById('angleUDisplay').textContent = Math.round(baseAngleU + 30 * Math.sin(t * Math.PI * 2)) + '°';
+            document.getElementById('angleVDisplay').textContent = Math.round(baseAngleV + 20 * Math.cos(t * Math.PI * 2)) + '°';
+        }
+
+        function animateTransformation() {
+            const t = (Math.sin(animationFrame * 0.08) + 1) / 2;
+            
+            // Animate through different transformations
+            if (animationFrame < 40) {
+                // Rotation
+                const angle = t * Math.PI / 4;
+                matrix.a = Math.cos(angle);
+                matrix.b = -Math.sin(angle);
+                matrix.c = Math.sin(angle);
+                matrix.d = Math.cos(angle);
+            } else if (animationFrame < 80) {
+                // Scaling
+                const scale = 0.5 + 1.5 * t;
+                matrix.a = scale;
+                matrix.b = 0;
+                matrix.c = 0;
+                matrix.d = scale;
+            } else {
+                // Shear
+                matrix.a = 1;
+                matrix.b = t;
+                matrix.c = 0;
+                matrix.d = 1;
+            }
+            
+            // Update sliders
+            document.getElementById('matrixA').value = matrix.a;
+            document.getElementById('matrixB').value = matrix.b;
+            document.getElementById('matrixC').value = matrix.c;
+            document.getElementById('matrixD').value = matrix.d;
+            
+            document.getElementById('matADisplay').textContent = matrix.a.toFixed(1);
+            document.getElementById('matBDisplay').textContent = matrix.b.toFixed(1);
+            document.getElementById('matCDisplay').textContent = matrix.c.toFixed(1);
+            document.getElementById('matDDisplay').textContent = matrix.d.toFixed(1);
+        }
+
+        function resetView() {
+            isAnimating = false;
+            
+            switch(currentConcept) {
+                case 'vectors':
+                    vectors.a = { x: 3, y: 2, color: '#ff6b6b', draggable: true };
+                    vectors.b = { x: 1, y: 3, color: '#4ecdc4', draggable: true };
+                    break;
+                case 'dot-product':
+                    document.getElementById('angleU').value = 30;
+                    document.getElementById('angleV').value = 60;
+                    document.getElementById('magU').value = 3;
+                    document.getElementById('magV').value = 2.5;
+                    break;
+                case 'transformations':
+                    matrix = { a: 1, b: 0, c: 0, d: 1 };
+                    break;
+            }
+            
+            setupControls();
+            updateCalculations();
+        }
+
+        function randomize() {
+            switch(currentConcept) {
+                case 'vectors':
+                    vectors.a.x = (Math.random() - 0.5) * 8;
+                    vectors.a.y = (Math.random() - 0.5) * 8;
+                    vectors.b.x = (Math.random() - 0.5) * 8;
+                    vectors.b.y = (Math.random() - 0.5) * 8;
+                    break;
+                case 'dot-product':
+                    document.getElementById('angleU').value = Math.random() * 360;
+                    document.getElementById('angleV').value = Math.random() * 360;
+                    document.getElementById('magU').value = 1 + Math.random() * 4;
+                    document.getElementById('magV').value = 1 + Math.random() * 4;
+                    break;
+                case 'transformations':
+                    matrix.a = (Math.random() - 0.5) * 4;
+                    matrix.b = (Math.random() - 0.5) * 4;
+                    matrix.c = (Math.random() - 0.5) * 4;
+                    matrix.d = (Math.random() - 0.5) * 4;
+                    break;
+            }
+            
+            setupControls();
+            updateCalculations();
+        }
+
+        // Utility functions
+        function toggleGrid() {
+            showGrid = !showGrid;
+        }
+
+        function showAddition() {
+            vectors.result.color = '#64ffda';
+            vectors.result.x = vectors.a.x + vectors.b.x;
+            vectors.result.y = vectors.a.y + vectors.b.y;
+        }
+
+        function showSubtraction() {
+            vectors.result.color = '#ff9500';
+            vectors.result.x = vectors.a.x - vectors.b.x;
+            vectors.result.y = vectors.a.y - vectors.b.y;
+        }
+
+        function showParallelogram() {
+            // Highlight parallelogram construction
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.vector-info');
+                elements.forEach(el => el.classList.add('pulsing'));
+                setTimeout(() => {
+                    elements.forEach(el => el.classList.remove('pulsing'));
+                }, 2000);
+            }, 100);
+        }
+
+        function toggleProjections() {
+            settings.showProjections = !settings.showProjections;
+        }
+
+        function showAngleArc() {
+            // Visual emphasis on angle measurement
+            console.log('Showing angle arc animation');
+        }
+
+        function presetRotation() {
+            const angle = Math.PI / 4; // 45 degrees
+            matrix.a = Math.cos(angle);
+            matrix.b = -Math.sin(angle);
+            matrix.c = Math.sin(angle);
+            matrix.d = Math.cos(angle);
+            setupControls();
+        }
+
+        function presetShear() {
+            matrix.a = 1;
+            matrix.b = 1;
+            matrix.c = 0;
+            matrix.d = 1;
+            setupControls();
+        }
+
+        function presetScale() {
+            matrix.a = 1.5;
+            matrix.b = 0;
+            matrix.c = 0;
+            matrix.d = 0.5;
+            setupControls();
+        }
+    </script>
+</body>
+</html>
